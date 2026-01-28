@@ -1,0 +1,4 @@
+export const Types = {
+    LIST_EXAM_TYPES: 'LIST_EXAM_TYPES',
+    DETAIL_EXAM_TYPE: 'DETAIL_EXAM_TYPE',
+};

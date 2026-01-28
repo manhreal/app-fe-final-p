@@ -1,0 +1,95 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #fff;
+  display: block;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+}
+
+/* src/index.css */
+.ant-modal .ant-btn-primary {
+  background-color: #1677ff;
+  border-color: #1677ff;
+}
+
+.ant-modal .ant-btn-primary:hover {
+  background-color: #4096ff;
+  border-color: #4096ff;
+}
+
+/* Đảm bảo Table không bị co nhỏ hơn tổng nội dung */
+.list-user-table .ant-table {
+  min-width: 900px;
+  /* hoặc tùy chỉnh theo số cột */
+}
+
+/* Cho phép wrapper Table cuộn ngang */
+.list-user-table {
+  overflow-x: auto;
+}
+
+/* Fix màu chữ cho các nút SweetAlert2 */
+.swal2-popup .swal2-styled {
+  color: #fff !important;
+  font-weight: 500;
+}
+
+/* Màu riêng cho nút xác nhận */
+.swal2-popup .swal2-confirm {
+  background-color: #d33 !important;
+  border: none !important;
+}
+
+/* Màu riêng cho nút hủy */
+.swal2-popup .swal2-cancel {
+  background-color: #3085d6 !important;
+  border: none !important;
+}
+
+/* Khi hover thì đậm màu hơn */
+.swal2-popup .swal2-confirm:hover {
+  background-color: #b92c2c !important;
+}
+
+.swal2-popup .swal2-cancel:hover {
+  background-color: #1d6bd6 !important;
+}

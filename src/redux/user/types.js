@@ -1,0 +1,5 @@
+export const Types = {
+    LIST_USER: 'LIST_USER',
+    LIST_USERS_TO_ADD_CLASS: 'LIST_USERS_TO_ADD_CLASS',
+    DETAIL_USER: 'DETAIL_USER',
+};

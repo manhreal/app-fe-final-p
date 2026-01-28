@@ -1,0 +1,4 @@
+export const Types = {
+    LIST_QUIZ_TYPES: 'LIST_QUIZ_TYPES',
+    DETAIL_QUIZ_TYPE: 'DETAIL_QUIZ_TYPE',
+};

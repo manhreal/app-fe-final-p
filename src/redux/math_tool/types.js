@@ -1,0 +1,6 @@
+export const MathTypes = {
+    SET_LOADING: 'MATH_SET_LOADING',
+    SET_ERROR: 'MATH_SET_ERROR',
+    SAVE_RESULT: 'MATH_SAVE_RESULT',
+    CLEAR_RESULT: 'CLEAR_RESULT'
+};

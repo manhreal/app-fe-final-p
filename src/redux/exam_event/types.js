@@ -1,0 +1,4 @@
+export const Types = {
+    LIST_EXAM_EVENTS: 'LIST_EXAM_EVENTS',
+    DETAIL_EXAM_EVENT: 'DETAIL_EXAM_EVENT',
+};

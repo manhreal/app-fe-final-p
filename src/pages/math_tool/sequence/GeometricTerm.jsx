@@ -1,0 +1,297 @@
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { mathActions } from '../../../redux/math_tool/actions';
+import {
+    commonClasses,
+    initializeMathJax,
+    renderMathJax
+} from '../../../template_ui/commonMathUtils';
+import {
+    TheorySection,
+    InputField,
+    SubmitButton,
+    ErrorMessage,
+    ResultSection
+} from '../../../template_ui/commonStyles';
+
+const GeometricTerm = () => {
+    const dispatch = useDispatch();
+    const { loading, result, error } = useSelector(state => state.math_tool);
+
+    const [a1, setA1] = useState(2);
+    const [r, setR] = useState(3);
+    const [n, setN] = useState(4);
+    const [mathJaxReady, setMathJaxReady] = useState(false);
+
+    // Initialize MathJax on component mount
+    useEffect(() => {
+        initializeMathJax(setMathJaxReady);
+    }, []);
+
+    // Re-render MathJax when content changes
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            renderMathJax(mathJaxReady);
+        }, 100);
+        return () => clearTimeout(timeout);
+    }, [result, mathJaxReady]);
+
+    // Input validation
+    const validateInputs = () => {
+        if (n <= 0) return false;
+        if (!Number.isInteger(n)) return false;
+        if (isNaN(a1) || isNaN(r)) return false;
+        if (r === 0) return false;
+        return true;
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!validateInputs()) {
+            return;
+        }
+        dispatch(mathActions.actionGeometricTerm({ a1, r, n }));
+    };
+
+    return (
+        <div className={commonClasses.container}>
+            {/* Theory Section */}
+            <TheorySection
+                title="Kiến thức cơ bản"
+                icon="📚"
+                formula={String.raw`$$a_n = a_1 \cdot r^{n-1}$$`}
+                description={
+                    <>
+                        Số hạng thứ n của cấp số nhân với{' '}
+                        <strong>số hạng đầu a₁ và công bội r</strong>
+                    </>
+                }
+                example={`$a_4 = 2 \\cdot 3^{4-1} = 2 \\cdot 3^3 = 2 \\cdot 27 = 54$`}
+            />
+
+            {/* Input Section */}
+            <div className={`${commonClasses.card} ${commonClasses.cardPadding}`}>
+                <h3 className={commonClasses.sectionTitle}>
+                    <span className="mr-2 text-lg">🔢</span>
+                    Nhập dữ liệu
+                </h3>
+
+                <div className={`${commonClasses.mathDisplay} mb-6`}>
+                    <div className="tex2jax_process text-sm sm:text-base lg:text-lg">
+                        {`$$a_n = a_1 \\cdot r^{n-1}$$`}
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        <InputField
+                            label="Số hạng đầu (a₁)"
+                            value={a1}
+                            onChange={(value) => setA1(Number(value))}
+                            step="any"
+                            helpText="Số thực khác 0"
+                        />
+
+                        <InputField
+                            label="Công bội (r)"
+                            value={r}
+                            onChange={(value) => setR(Number(value))}
+                            step="any"
+                            helpText="Số thực khác 0"
+                        />
+
+                        <InputField
+                            label="Thứ tự số hạng (n)"
+                            value={n}
+                            onChange={(value) => setN(Math.max(1, Math.floor(Number(value))))}
+                            min="1"
+                            step="1"
+                            helpText="Số nguyên dương"
+                        />
+                    </div>
+
+                    {(n <= 0 || r === 0) && (
+                        <div className="text-red-600 text-sm mt-2 text-center">
+                            ⚠️ Lưu ý: n phải là số nguyên dương và r phải khác 0
+                        </div>
+                    )}
+
+                    <SubmitButton
+                        loading={loading}
+                        disabled={!validateInputs()}
+                    />
+                </form>
+            </div>
+
+            <ErrorMessage error={error} />
+
+            {result && (
+                <ResultSection title="Kết quả chi tiết" icon="📈">
+                    {/* Formula Display */}
+                    <div className={`${commonClasses.mathDisplay} mb-6`}>
+                        <div className="tex2jax_process text-sm sm:text-base lg:text-lg break-words">
+                            <strong>Công thức:</strong><br />
+                            <div className="mt-2">
+                                {`$$a_{${n}} = ${a1} \\cdot ${r}^{${n}-1}$$`}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Step by step calculation */}
+                    <h4 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                        <span className="mr-2">🔍</span>
+                        Chi tiết tính toán:
+                    </h4>
+
+                    <div className="overflow-x-auto mb-6 -mx-3 sm:mx-0 max-w-full">
+                        <div className="px-3 sm:px-0">
+                            <table className="w-full bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 sm:min-w-[400px]">
+                                <thead className="bg-blue-500 text-white">
+                                    <tr>
+                                        <th className={commonClasses.tableHeader}>Bước</th>
+                                        <th className={commonClasses.tableHeader}>Mô tả</th>
+                                        <th className={commonClasses.tableHeader}>Giá trị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                        <td className={`${commonClasses.tableCell} font-medium`}>1</td>
+                                        <td className={commonClasses.tableCell}>
+                                            <span className="tex2jax_process text-xs sm:text-sm">
+                                                {`Áp dụng công thức: $a_n = a_1 \\cdot r^{n-1}$`}
+                                            </span>
+                                        </td>
+                                        <td className={commonClasses.tableCell}>
+                                            <span className="tex2jax_process text-xs sm:text-sm">
+                                                {`$a_{${n}} = ${a1} \\cdot ${r}^{${n}-1}$`}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="bg-white border-b border-gray-200">
+                                        <td className={`${commonClasses.tableCell} font-medium`}>2</td>
+                                        <td className={commonClasses.tableCell}>
+                                            Tính số mũ
+                                        </td>
+                                        <td className={commonClasses.tableCell}>
+                                            <span className="tex2jax_process text-xs sm:text-sm break-all">
+                                                {`$${n} - 1 = ${n - 1}$`}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                        <td className={`${commonClasses.tableCell} font-medium`}>3</td>
+                                        <td className={commonClasses.tableCell}>
+                                            Tính lũy thừa
+                                        </td>
+                                        <td className={commonClasses.tableCell}>
+                                            <span className="tex2jax_process text-xs sm:text-sm break-all">
+                                                {`$${r}^{${n - 1}} = ${Math.pow(r, n - 1)}$`}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="bg-white border-b border-gray-200">
+                                        <td className={`${commonClasses.tableCell} font-medium`}>4</td>
+                                        <td className={commonClasses.tableCell}>
+                                            Tính kết quả cuối cùng
+                                        </td>
+                                        <td className={commonClasses.tableCell}>
+                                            <span className="tex2jax_process text-xs sm:text-sm break-all">
+                                                {`$a_{${n}} = ${a1} \\cdot ${Math.pow(r, n - 1)} = ${result?.value}$`}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="bg-gray-50">
+                                        <td className={`${commonClasses.tableCell} font-medium`}>5</td>
+                                        <td className={commonClasses.tableCell}>
+                                            Kết quả cuối cùng
+                                        </td>
+                                        <td className={`${commonClasses.tableCell} font-bold text-blue-600`}>
+                                            {result?.value}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Final Result */}
+                    {result?.value && (
+                        <div className={commonClasses.successBox}>
+                            <div className="text-center">
+                                <strong className="text-xs sm:text-sm lg:text-base text-gray-800">🎯 Kết quả cuối cùng:</strong>
+
+                                {/* Formula Display */}
+                                <div className="mt-3 p-2 bg-white rounded border overflow-x-auto">
+                                    <div className="tex2jax_process text-xs sm:text-sm">
+                                        <div className="mt-2">
+                                            {`$a_{${n}} = ${a1} \\cdot ${r}^{${n}-1}$`}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Result Value */}
+                                <div className={commonClasses.resultBox}>
+                                    <div className="tex2jax_process text-lg sm:text-2xl font-bold text-blue-600">
+                                        ${result?.value}$
+                                    </div>
+                                </div>
+
+                                {/* Meaning */}
+                                <div className="mt-3 p-2 bg-blue-50 rounded border">
+                                    <div className="text-xs sm:text-sm text-gray-700">
+                                        <strong>Ý nghĩa:</strong> Số hạng thứ {n} trong cấp số nhân
+                                        (với a₁ = {a1}, r = {r}) là <span className="font-bold text-blue-600">{result?.value}</span>
+                                    </div>
+                                </div>
+
+                                {/* Sequence Display */}
+                                <div className="mt-3 p-2 bg-green-50 rounded border">
+                                    <div className="text-xs sm:text-sm text-gray-700">
+                                        <strong>Dãy số:</strong>
+                                        <div className="mt-1 tex2jax_process">
+                                            {Array.from({ length: Math.min(n, 6) }, (_, i) => a1 * Math.pow(r, i)).join(', ')}
+                                            {n > 6 && ', ...'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Pattern Display */}
+                                <div className="mt-3 p-2 bg-yellow-50 rounded border">
+                                    <div className="text-xs sm:text-sm text-gray-700">
+                                        <strong>Quy luật:</strong> Mỗi số hạng bằng số hạng trước nhân với {r}
+                                        <div className="mt-1 tex2jax_process">
+                                            {`$a_1 = ${a1}, \\quad a_2 = ${a1} \\cdot ${r} = ${a1 * r}, \\quad a_3 = ${a1 * r} \\cdot ${r} = ${a1 * r * r}, ...$`}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Additional Properties */}
+                            <div className="mt-4 text-center">
+                                <h5 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                                    💡 Tính chất của cấp số nhân:
+                                </h5>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
+                                    <div className="tex2jax_process">
+                                        {`$\\frac{a_{n+1}}{a_n} = r$`}
+                                    </div>
+                                    <div className="tex2jax_process">
+                                        {`$a_n^2 = a_{n-1} \\cdot a_{n+1}$`}
+                                    </div>
+                                    <div className="tex2jax_process">
+                                        {`$S_n = \\frac{a_1(1-r^n)}{1-r}$ (r ≠ 1)`}
+                                    </div>
+                                    <div className="tex2jax_process">
+                                        {`$S_n = n \\cdot a_1$ (r = 1)`}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </ResultSection>
+            )}
+        </div>
+    );
+};
+
+export default GeometricTerm;
