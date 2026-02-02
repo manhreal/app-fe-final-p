@@ -9,7 +9,7 @@ export const actionGetListClasses = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/classes', 'get', payload, {
+        const response = await fetchApi('/app/classes', 'get', payload, {
             Authorization: `Bearer ${token}`,
         });
 
@@ -33,7 +33,7 @@ export const actionGetDetailClass = (id) => async (dispatch) => {
         dispatch(actionLoading(true));
         const token = getToken();
 
-        const response = await fetchApi(`/admin/classes/${id}`, 'get', {}, {
+        const response = await fetchApi(`/app/classes/${id}`, 'get', {}, {
             Authorization: `Bearer ${token}`,
         });
         console.log("Response in actionGetDetailClass:", response);
@@ -47,7 +47,7 @@ export const actionGetDetailClass = (id) => async (dispatch) => {
         dispatch(actionLoading(false));
         return response.data;
     } catch (error) {
-        console.error("Error in actionGetDetailUser:", error);
+        console.error("Error in actionGetDetailClass:", error);
         dispatch(actionLoading(false));
         alert(error?.message || error);
     }
@@ -58,7 +58,7 @@ export const actionUpdateClass = (id, payload = {}) => async (dispatch) => {
         dispatch(actionLoading(true));
         const token = getToken();
 
-        const response = await fetchApi(`/admin/classes/${id}`, 'put', payload, {
+        const response = await fetchApi(`/app/classes/${id}`, 'put', payload, {
             Authorization: `Bearer ${token}`,
         });
 
@@ -83,7 +83,7 @@ export const actionCreateClass = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/classes', 'post', payload, {
+        const response = await fetchApi('/app/classes', 'post', payload, {
             Authorization: `Bearer ${token}`,
         });
         if (response.code !== 200) {
@@ -104,7 +104,7 @@ export const actionDeleteClass = (id) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi(`/admin/classes/${id}`, 'delete', {}, {
+        const response = await fetchApi(`/app/classes/${id}`, 'delete', {}, {
             Authorization: `Bearer ${token}`,
         });
         if (response.code !== 200) {

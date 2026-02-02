@@ -42,7 +42,7 @@ function InfoClass() {
 
     // Quay về danh sách lớp học
     const handleBackToList = useCallback(() => {
-        navigate("/admin/classes/classes-list");
+        navigate("/my-classes");
     }, [navigate]);
 
     // Chuyển tab

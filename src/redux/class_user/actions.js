@@ -9,7 +9,7 @@ export const actionGetListClassUsers = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/class-users/list-class-users', 'get', payload, {
+        const response = await fetchApi('/app/class-users/list-class-users', 'get', payload, {
             Authorization: `Bearer ${token}`,
         });
 
@@ -33,7 +33,7 @@ export const actionGetDetailClassUser = (id) => async (dispatch) => {
         dispatch(actionLoading(true));
         const token = getToken();
 
-        const response = await fetchApi(`/admin/class-users/${id}`, 'get', {}, {
+        const response = await fetchApi(`/app/class-users/${id}`, 'get', {}, {
             Authorization: `Bearer ${token}`,
         });
         console.log("Response in actionGetDetailClassUser:", response);
@@ -58,7 +58,7 @@ export const actionUpdateStatusClassUser = (id, payload = {}) => async (dispatch
         dispatch(actionLoading(true));
         const token = getToken();
 
-        const response = await fetchApi(`/admin/class-users/${id}`, 'put', payload, {
+        const response = await fetchApi(`/app/class-users/${id}`, 'put', payload, {
             Authorization: `Bearer ${token}`,
         });
 
@@ -83,7 +83,7 @@ export const actionCreateClassUser = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/class-users', 'post', payload, {
+        const response = await fetchApi('/app/class-users', 'post', payload, {
             Authorization: `Bearer ${token}`,
         });
         if (response.code !== 200) {
@@ -104,7 +104,7 @@ export const actionDeleteClassUser = (id) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi(`/admin/class-users/${id}`, 'delete', {}, {
+        const response = await fetchApi(`/app/class-users/${id}`, 'delete', {}, {
             Authorization: `Bearer ${token}`,
         });
         if (response.code !== 200) {

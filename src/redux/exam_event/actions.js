@@ -8,7 +8,7 @@ export const actionGetListExamEvents = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/exam-events', 'get', payload, {
+        const response = await fetchApi('/app/exam-events', 'get', payload, {
             Authorization: `Bearer ${token}`,
         });
 

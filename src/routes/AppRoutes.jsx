@@ -14,6 +14,11 @@ import MathTool from '../pages/math_tool/MathTool';
 import { mathToolRoutes } from './mathToolRoutes';
 import Forbidden from '../pages/Error/Forbidden';
 
+import ListExamEvents from '../pages/app/ExamEvent/ListExamEvents';
+import ListClasses from '../pages/app/Class/ListClasses';
+import MyClasses from '../pages/app/UserClass/MyClasses';
+import InfoClass from '../pages/app/UserClass/InfoClass';
+
 const AppRoutes = () => {
     return (
         <Routes>
@@ -43,6 +48,9 @@ const AppRoutes = () => {
                     ))}
                 </Route>
 
+                <Route path ="exam-events" element={<ListExamEvents />} />
+                <Route path ="classes" element={<ListClasses />} />
+                
                 {/* ==================== PROTECTED ROUTES ==================== */}
                 {/* Các route yêu cầu đăng nhập (bất kỳ user nào) */}
                 <Route 
@@ -50,6 +58,24 @@ const AppRoutes = () => {
                     element={
                         <PrivateRoute>
                             <Profile />
+                        </PrivateRoute>
+                    } 
+                />
+
+                <Route 
+                    path="my-classes" 
+                    element={
+                        <PrivateRoute>
+                            <MyClasses />
+                        </PrivateRoute>
+                    } 
+                />
+
+                <Route 
+                    path="my-classes/info-class/:id" 
+                    element={
+                        <PrivateRoute>
+                            <InfoClass />
                         </PrivateRoute>
                     } 
                 />

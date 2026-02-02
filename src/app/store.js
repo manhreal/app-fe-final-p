@@ -18,6 +18,7 @@ import quizReducer from '../redux/quiz/reducer';
 import quizDifficultyReducer from '../redux/quiz_difficulty/reducer';
 import quizFormatReducer from '../redux/quiz_format/reducer';
 import quizTypeReducer from '../redux/quiz_type/reducer';
+import userClassReducer from '../redux/user_class/reducer';
 
 import statisticReducer from '../redux/statistic/reducer';
 
@@ -43,6 +44,7 @@ export const store = configureStore({
         quizFormats: quizFormatReducer,
         quizTypes: quizTypeReducer,
         statistics: statisticReducer,
+        userClasses: userClassReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
