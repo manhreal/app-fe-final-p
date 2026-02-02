@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { actionLogin, actionSignUp } from '../../redux/auth/actions';
 import '../../styles/AuthPage.css';
 import {
-    validateName,
-    validateEmail,
-    validateMobile,
-    validatePassword
+    checkName as validateName,
+    checkEmail as validateEmail,
+    checkPassword as validatePassword
 } from '../../lib/validations';
 
 const AuthPage = () => {

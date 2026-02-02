@@ -79,3 +79,12 @@ export const checkMobile = (mobile) => {
     }
     return '';
 };
+
+export const checkPassword = (password) => {
+    if (!password) return 'Vui lòng nhập mật khẩu';
+    if (password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+        return 'Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường và một số';
+    }
+    return '';
+};
