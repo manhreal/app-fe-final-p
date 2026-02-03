@@ -33,7 +33,6 @@ const ViewClassMaterials = ({ classId }) => {
         const { title, teacher_name, category_id } = formValues;
         return {
             class_id: classId,
-            status: '1', // Chỉ hiển thị tài liệu khả dụng
             ...(title && { title }),
             ...(teacher_name && { teacher_name }),
             ...(category_id && { category_id }),

@@ -9,7 +9,7 @@ export const actionGetListClassUsers = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/app/class-users/list-class-users', 'get', payload, {
+        const response = await fetchApi('/app/user-classes/list-class-users', 'get', payload, {
             Authorization: `Bearer ${token}`,
         });
 

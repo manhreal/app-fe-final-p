@@ -83,6 +83,7 @@ const mathToolCategories = [
 const profileMenuItems = [
     { name: 'Hồ sơ cá nhân', href: '/profile', icon: User },
     { name: 'Lớp học của tôi', href: '/my-classes', icon: BookOpen },
+    { name: 'Kỳ thi của tôi', href: '/my-exam-events', icon: BookOpen },
     { name: 'Chứng chỉ', href: '/certificates', icon: Award },
     { name: 'Cài đặt', href: '/settings', icon: Settings },
 ];

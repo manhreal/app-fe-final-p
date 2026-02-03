@@ -9,7 +9,7 @@ export const actionGetListClassMaterials = (payload = {}) => async (dispatch) =>
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/class-materials/class-material/list', 'get', payload, {
+        const response = await fetchApi('/app/user-classes/class-material/list', 'get', payload, {
             Authorization: `Bearer ${token}`,
         });
 

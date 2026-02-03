@@ -1,17 +1,16 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Table, Input, Button, Card, Space, Row, Col, Form, Tag, Tooltip } from 'antd';
+import { Table, Input, Button, Card, Space, Row, Col, Form, Tag, Image } from 'antd';
 import { 
     SearchOutlined, 
     PlusOutlined, 
     ReloadOutlined, 
     LogoutOutlined,
-    BookOutlined,
-    UserOutlined 
+    FileTextOutlined
 } from '@ant-design/icons';
-import { actionGetMyClasses, actionLeaveClass } from '../../../redux/user_class/actions';
+import { actionGetMyExamEvents, actionLeaveExamEvent } from '../../../redux/user_exam_event/actions';
 import SimplePagination from '../../../components/Pagination/Pagination';
-import JoinClassModal from './JoinClassModal';
+import JoinExamEventModal from './JoinExamEventModal';
 import {
     showErrorAlert,
     showSuccessToast,
@@ -26,7 +25,7 @@ const DEFAULT_PAGINATION = {
     total: 0
 };
 
-const CLASS_STATUS = {
+const EXAM_EVENT_STATUS = {
     0: { label: 'Không hoạt động', color: 'default' },
     1: { label: 'Đang hoạt động', color: 'green' }
 };
@@ -37,20 +36,20 @@ const USER_STATUS = {
     2: { label: 'Từ chối', color: 'red' }
 };
 
-const MyClasses = () => {
+const MyExamEvents = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { dataListUserClasses, loading } = useSelector(state => state.userClasses);
+    const { dataListMyExamEvents, loading } = useSelector(state => state.examEvents);
     const [form] = Form.useForm();
     const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const [joinModalVisible, setJoinModalVisible] = useState(false);
 
     const buildSearchParams = useCallback((formValues = {}, paginationInfo = pagination) => {
-        const { name, invite_code, status } = formValues;
+        const { name, code, description } = formValues;
         return {
             ...(name && { name }),
-            ...(invite_code && { invite_code }),
-            ...(status !== undefined && { status }),
+            ...(code && { code }),
+            ...(description && { description }),
             page: paginationInfo.current,
             limit: paginationInfo.pageSize
         };
@@ -69,7 +68,7 @@ const MyClasses = () => {
         const params = buildSearchParams(formValues, searchPagination);
 
         try {
-            const result = await dispatch(actionGetMyClasses(params));
+            const result = await dispatch(actionGetMyExamEvents(params));
             const total = result?.total || 0;
 
             setPagination(prev => ({
@@ -78,7 +77,7 @@ const MyClasses = () => {
                 ...(resetPage && { current: 1 })
             }));
         } catch (error) {
-            console.error('Error fetching my classes:', error);
+            console.error('Error fetching my exam events:', error);
             setPagination(prev => ({ ...prev, total: 0 }));
             await showErrorAlert('Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.');
         }
@@ -90,7 +89,7 @@ const MyClasses = () => {
 
         const formValues = form.getFieldsValue();
         const params = buildSearchParams(formValues, newPagination);
-        dispatch(actionGetMyClasses(params));
+        dispatch(actionGetMyExamEvents(params));
     }, [dispatch, form, pagination, buildSearchParams]);
 
     const handleReset = useCallback(async () => {
@@ -99,7 +98,7 @@ const MyClasses = () => {
         const params = { page: 1, limit: pagination.pageSize };
 
         try {
-            await dispatch(actionGetMyClasses(params));
+            await dispatch(actionGetMyExamEvents(params));
             showSuccessToast('Đã đặt lại bộ lọc');
         } catch (error) {
             console.error('Reset error:', error);
@@ -107,36 +106,36 @@ const MyClasses = () => {
     }, [dispatch, form, pagination.pageSize]);
 
     const handleView = useCallback((record) => {
-        console.log('View class:', record);
-        navigate(`info-class/${record.class?.id}`);
+        console.log('View exam event:', record);
+        navigate(`info-exam-event/${record.examEvent?.id}`);
     }, [navigate]);
 
-    const handleLeaveClass = useCallback(async (record) => {
+    const handleLeaveExamEvent = useCallback(async (record) => {
         const result = await showDeleteConfirmDialog(
-            record.class?.name, 
-            'lớp học',
-            'Bạn có chắc chắn muốn rời khỏi lớp học này?',
+            record.examEvent?.name, 
+            'kỳ thi',
+            'Bạn có chắc chắn muốn rời khỏi kỳ thi này?',
             'Rời khỏi'
         );
 
         if (!result.isConfirmed) return;
 
         try {
-            const deleteResult = await dispatch(actionLeaveClass(record.id));
+            const deleteResult = await dispatch(actionLeaveExamEvent(record.id));
 
             if (deleteResult?.success || deleteResult?.status === 200 || deleteResult) {
-                await showSuccessToast('Rời khỏi lớp học thành công');
+                await showSuccessToast('Rời khỏi kỳ thi thành công');
                 handleSearch(true);
             } else {
-                await showErrorAlert(deleteResult?.message || 'Rời khỏi lớp học thất bại');
+                await showErrorAlert(deleteResult?.message || 'Rời khỏi kỳ thi thất bại');
             }
         } catch (error) {
-            console.error('Leave class error:', error);
+            console.error('Leave exam event error:', error);
             await showErrorAlert('Đã xảy ra lỗi, vui lòng thử lại');
         }
     }, [dispatch, handleSearch]);
 
-    const handleJoinClass = useCallback(() => {
+    const handleJoinExamEvent = useCallback(() => {
         setJoinModalVisible(true);
     }, []);
 
@@ -163,68 +162,75 @@ const MyClasses = () => {
             render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1
         },
         {
-            title: 'Tên lớp học',
-            dataIndex: ['class', 'name'],
-            key: 'class_name',
-            width: 250,
-            render: (name, record) => (
-                <div>
-                    <div className="font-medium text-blue-600 flex items-center gap-2">
-                        <BookOutlined />
-                        <span title={name}>{truncateText(name, 40)}</span>
-                    </div>
-                    {record.class?.description && (
-                        <div className="text-gray-500 text-sm mt-1" title={record.class.description}>
-                            {truncateText(record.class.description, 60)}
+            title: 'Ảnh',
+            dataIndex: ['examEvent', 'image'],
+            key: 'image',
+            width: 80,
+            align: 'center',
+            render: (image, record) => (
+                <div className="flex justify-center">
+                    {image ? (
+                        <Image
+                            src={image}
+                            alt={record.examEvent?.name}
+                            width={40}
+                            height={40}
+                            style={{ 
+                                objectFit: 'cover', 
+                                borderRadius: '6px',
+                                border: '1px solid #f0f0f0'
+                            }}
+                            preview={{
+                                mask: 'Xem ảnh'
+                            }}
+                        />
+                    ) : (
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 via-blue-500 to-purple-500 rounded flex items-center justify-center text-white text-xs font-bold">
+                            <FileTextOutlined />
                         </div>
                     )}
                 </div>
             )
         },
         {
-            title: 'Mã lớp học',
-            dataIndex: ['class', 'invite_code'],
-            key: 'invite_code',
-            width: 180,
+            title: 'Tên kỳ thi',
+            dataIndex: ['examEvent', 'name'],
+            key: 'exam_event_name',
+            width: 200,
+            render: (name, record) => (
+                <div>
+                    <div className="font-medium text-blue-600" title={name}>
+                        {truncateText(name, 50)}
+                    </div>
+                    {record.examEvent?.description && (
+                        <div className="text-gray-500 text-sm mt-1" title={record.examEvent.description}>
+                            {truncateText(record.examEvent.description, 60)}
+                        </div>
+                    )}
+                </div>
+            )
+        },
+        {
+            title: 'Mã kỳ thi',
+            dataIndex: ['examEvent', 'code'],
+            key: 'code',
+            width: 150,
             render: (code) => (
-                <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                <code className="bg-gray-100 px-2 py-1 rounded text-xs text-blue-600">
                     {code || '-'}
                 </code>
             )
         },
         {
-            title: 'Giáo viên',
-            dataIndex: ['class', 'teacher'],
-            key: 'teacher',
-            width: 200,
-            render: (teacher) => (
-                <div>
-                    <div className="font-medium flex items-center gap-2">
-                        <UserOutlined />
-                        {teacher?.name || '-'}
-                    </div>
-                    {teacher?.email && (
-                        <div className="text-gray-500 text-sm">
-                            {teacher.email}
-                        </div>
-                    )}
+            title: 'Mô tả',
+            dataIndex: ['examEvent', 'description'],
+            key: 'description',
+            width: 250,
+            render: (description) => (
+                <div title={description} className="text-gray-600">
+                    {truncateText(description, 80)}
                 </div>
             )
-        },
-        {
-            title: 'Trạng thái lớp',
-            dataIndex: ['class', 'status'],
-            key: 'class_status',
-            width: 140,
-            align: 'center',
-            render: (status) => {
-                const statusInfo = CLASS_STATUS[status] || CLASS_STATUS[0];
-                return (
-                    <Tag color={statusInfo.color}>
-                        {statusInfo.label}
-                    </Tag>
-                );
-            }
         },
         {
             title: 'Trạng thái tham gia',
@@ -249,8 +255,9 @@ const MyClasses = () => {
             align: 'center',
             render: (roleId) => {
                 const roleMap = {
-                    3: { label: 'Học sinh', color: 'blue' },
-                    7: { label: 'Giáo viên', color: 'purple' }
+                    3: { label: 'Thí sinh', color: 'blue' },
+                    7: { label: 'Giám thị', color: 'purple' },
+                    1: { label: 'Quản trị', color: 'red' }
                 };
                 const role = roleMap[roleId] || { label: 'Khác', color: 'default' };
                 return (
@@ -264,7 +271,7 @@ const MyClasses = () => {
             title: 'Ngày tham gia',
             dataIndex: 'createdAt',
             key: 'createdAt',
-            width: 140,
+            width: 120,
             render: (createdAt) => {
                 return createdAt ? new Date(createdAt).toLocaleDateString('vi-VN') : '-';
             }
@@ -277,14 +284,14 @@ const MyClasses = () => {
             fixed: 'right',
             render: (_, record) => (
                 <ActionEditDelete
-                                    onclickView={() => handleView(record)}
-                                    onclickDelete={() => handleLeaveClass(record)}
-                                    tooltipText={record.name}
-                                    hideEdit
-                                />
+                    onclickView={() => handleView(record)}
+                    onclickDelete={() => handleLeaveExamEvent(record)}
+                    tooltipText={record.examEvent?.name}
+                    hideEdit
+                />
             )
         }
-    ], [pagination, handleLeaveClass]);
+    ], [pagination, handleView, handleLeaveExamEvent]);
 
     useEffect(() => {
         handleSearch(false);
@@ -303,25 +310,25 @@ const MyClasses = () => {
                     >
                         <Row gutter={16}>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Tên lớp học" name="name">
+                                <Form.Item label="Tên kỳ thi" name="name">
                                     <Input
-                                        placeholder="Nhập tên lớp học"
+                                        placeholder="Nhập tên kỳ thi"
                                         allowClear
                                     />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Mã lớp học" name="invite_code">
+                                <Form.Item label="Mã kỳ thi" name="code">
                                     <Input
-                                        placeholder="Nhập mã lớp học"
+                                        placeholder="Nhập mã kỳ thi"
                                         allowClear
                                     />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Trạng thái tham gia" name="status">
+                                <Form.Item label="Mô tả" name="description">
                                     <Input
-                                        placeholder="Trạng thái (0: Chờ, 1: Duyệt, 2: Từ chối)"
+                                        placeholder="Nhập mô tả"
                                         allowClear
                                     />
                                 </Form.Item>
@@ -352,10 +359,10 @@ const MyClasses = () => {
                                 <Button
                                     type="primary"
                                     icon={<PlusOutlined />}
-                                    onClick={handleJoinClass}
+                                    onClick={handleJoinExamEvent}
                                     className='bg-green-600'
                                 >
-                                    Tham gia lớp học
+                                    Tham gia kỳ thi
                                 </Button>
                             </Col>
                         </Row>
@@ -364,10 +371,10 @@ const MyClasses = () => {
 
                 {/* Data Table */}
                 <Card
-                    title="Lớp học của tôi"
+                    title="Kỳ thi của tôi"
                     extra={
                         <span style={{ color: '#666' }}>
-                            Tổng số: {pagination.total} lớp học
+                            Tổng số: {pagination.total} kỳ thi
                         </span>
                     }
                     className="w-full"
@@ -376,7 +383,7 @@ const MyClasses = () => {
                         <div className="px-3 sm:px-0">
                             <Table
                                 columns={columns}
-                                dataSource={dataListUserClasses?.rows || []}
+                                dataSource={dataListMyExamEvents?.rows || []}
                                 loading={loading}
                                 rowKey="id"
                                 pagination={false}
@@ -397,8 +404,8 @@ const MyClasses = () => {
                 </Card>
             </div>
 
-            {/* Join Class Modal */}
-            <JoinClassModal
+            {/* Join Exam Event Modal */}
+            <JoinExamEventModal
                 visible={joinModalVisible}
                 onSuccess={handleJoinSuccess}
                 onCancel={handleJoinCancel}
@@ -407,4 +414,4 @@ const MyClasses = () => {
     );
 };
 
-export default MyClasses;
+export default MyExamEvents;

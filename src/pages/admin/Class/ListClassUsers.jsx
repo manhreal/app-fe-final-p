@@ -14,6 +14,7 @@ import {
 } from '../../../lib/sweetAlertConfig';
 
 const { Option } = Select;
+const activeTab = 'participated';
 
 const DEFAULT_PAGINATION = {
     current: 1,
@@ -47,6 +48,7 @@ const ListClassUsers = ({ classId }) => {
         const { user_name, user_email, role_id, status } = formValues;
         return {
             class_id: classId,
+            type: activeTab,
             ...(user_name && { user_name }),
             ...(user_email && { user_email }),
             ...(role_id && { role_id }),
