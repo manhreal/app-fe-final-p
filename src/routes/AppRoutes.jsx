@@ -19,6 +19,9 @@ import ListClasses from '../pages/app/Class/ListClasses';
 import MyClasses from '../pages/app/UserClass/MyClasses';
 import InfoClass from '../pages/app/UserClass/InfoClass';
 
+import MyExamEvents from '../pages/app/UserExamEvent/MyExamEvents';
+import InfoExamEvent from '../pages/app/UserExamEvent/InfoExamEvent';
+
 const AppRoutes = () => {
     return (
         <Routes>
@@ -62,6 +65,8 @@ const AppRoutes = () => {
                     } 
                 />
 
+                
+                {/* User's Classes */}
                 <Route 
                     path="my-classes" 
                     element={
@@ -70,7 +75,6 @@ const AppRoutes = () => {
                         </PrivateRoute>
                     } 
                 />
-
                 <Route 
                     path="my-classes/info-class/:id" 
                     element={
@@ -79,6 +83,24 @@ const AppRoutes = () => {
                         </PrivateRoute>
                     } 
                 />
+
+                {/* User's Exam Events */}
+                <Route 
+                    path="my-exam-events" 
+                    element={
+                        <PrivateRoute>
+                            <MyExamEvents />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="my-exam-events/info-exam-event/:id" 
+                    element={
+                        <PrivateRoute>
+                            <InfoExamEvent />
+                        </PrivateRoute>
+                    } 
+                />  
 
                 <Route 
                     path="courses" 

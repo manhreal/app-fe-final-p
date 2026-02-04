@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Table, Input, Card, Row, Col, Form, Tag, Select, Image, Button, Space } from 'antd';
 import { UserOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
-import { actionGetListClassUsers } from '../../../redux/class_user/actions';
+import { actionGetListExamEventUsers } from '../../../redux/exam_event_user/actions';
 import { actionGetListRoles } from '../../../redux/role/actions';
 import SimplePagination from '../../../components/Pagination/Pagination';
 import { showErrorAlert, showSuccessToast } from '../../../lib/sweetAlertConfig';
@@ -56,7 +56,7 @@ const ListClassUsers = ({ classId }) => {
         const params = buildSearchParams(formValues, searchPagination);
 
         try {
-            const result = await dispatch(actionGetListClassUsers(params));
+            const result = await dispatch(actionGetListExamEventUsers(params));
             const total = result?.total || 0;
 
             setPagination(prev => ({
@@ -77,7 +77,7 @@ const ListClassUsers = ({ classId }) => {
 
         const formValues = form.getFieldsValue();
         const params = buildSearchParams(formValues, newPagination);
-        dispatch(actionGetListClassUsers(params));
+        dispatch(actionGetListExamEventUsers(params));
     }, [dispatch, form, pagination, buildSearchParams]);
 
     const handleReset = useCallback(async () => {
@@ -90,7 +90,7 @@ const ListClassUsers = ({ classId }) => {
         };
 
         try {
-            await dispatch(actionGetListClassUsers(params));
+            await dispatch(actionGetListExamEventUsers(params));
             showSuccessToast('Đã đặt lại bộ lọc');
         } catch (error) {
             console.error('Reset error:', error);
