@@ -1,8 +1,8 @@
 import { Types } from './types'
 
 const initialState = {
-    dataListClassUsers: null,
-    dataDetailClassUser: null,
+    dataListExamEventUsers: null,
+    dataDetailExamEventUser: null,
     loading: false
 }
 
@@ -11,12 +11,12 @@ const examEventUserReducer = (state = initialState, action) => {
         case Types.LIST_EXAM_EVENT_USERS:
             return {
                 ...state,
-                dataListClassUsers: action.payload
+                dataListExamEventUsers: action.payload
             }
         case Types.DETAIL_EXAM_EVENT_USER:
             return {
                 ...state,
-                dataDetailClassUser: action.payload
+                dataDetailExamEventUser: action.payload
             }
         default:
             return state

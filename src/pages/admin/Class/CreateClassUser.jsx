@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Form, Select, Button, message, Alert, Card, Row, Col, Avatar, Tag, Divider } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionCreateClassUser, actionUpdateStatusClassUser, actionGetDetailClassUser } from '../../../redux/class_user/actions';
-import { actionGetListUsersToAdd } from '../../../redux/user/actions';
+import { actionGetListUsersToAddCLass } from '../../../redux/user/actions';
 import { CheckOutlined, CloseOutlined, UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import {
     showErrorAlert,
@@ -64,7 +64,7 @@ const CreateClassUser = ({
         
         setLoadingUsers(true);
         try {
-            const result = await dispatch(actionGetListUsersToAdd({ 
+            const result = await dispatch(actionGetListUsersToAddCLass({ 
                 class_id: classId 
             }));
             setUsers(result?.rows || []);

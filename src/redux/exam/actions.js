@@ -8,7 +8,7 @@ export const actionGetListExams = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi('/admin/exams', 'get', payload, {
+        const response = await fetchApi('/app/exams', 'get', payload, {
             Authorization: `Bearer ${token}`,
         });
 

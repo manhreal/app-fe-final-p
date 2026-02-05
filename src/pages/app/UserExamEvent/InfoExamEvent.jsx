@@ -5,7 +5,7 @@ import { Card, Tabs, Spin } from "antd";
 import { actionGetDetailExamEvent } from "../../../redux/exam_event/actions";
 import DetailExamEvent from "./DetailExamEvent";
 import ListExamEventUsers from "./ListExamEventUsers";
-// import ListExamEventMaterials from "./ListExamEventMaterials";
+import ListExams from "./ListExams";
 import Loading1 from "../../../components/common/Loading";
 import BackButton2 from "../../../components/BackButton/BackButton2";
 
@@ -101,12 +101,9 @@ function InfoExamEvent() {
                     </div>
                 </TabPane>
 
-                <TabPane tab={<span>Tài liệu</span>} key="tab3">
-                    {/* <div className="mt-4">
-                        <ListExamEventMaterials examEventId={examEventId} />
-                    </div> */}
+                <TabPane tab={<span>Đề thi</span>} key="tab3">
                     <div className="mt-4">
-                        <ListExamEventUsers examEventId={examEventId} />
+                        <ListExams examEventId={examEventId} />
                     </div>
                 </TabPane>
             </Tabs>

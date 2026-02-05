@@ -39,7 +39,7 @@ const USER_STATUS = {
 const MyExamEvents = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { dataListMyExamEvents, loading } = useSelector(state => state.examEvents);
+    const { dataListUserExamEvents, loading } = useSelector(state => state.userExamEvents);
     const [form] = Form.useForm();
     const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const [joinModalVisible, setJoinModalVisible] = useState(false);
@@ -69,6 +69,7 @@ const MyExamEvents = () => {
 
         try {
             const result = await dispatch(actionGetMyExamEvents(params));
+            console.log('Fetched my exam events:', result);
             const total = result?.total || 0;
 
             setPagination(prev => ({
@@ -107,12 +108,12 @@ const MyExamEvents = () => {
 
     const handleView = useCallback((record) => {
         console.log('View exam event:', record);
-        navigate(`info-exam-event/${record.examEvent?.id}`);
+        navigate(`info-exam-event/${record.exam_event?.id}`);
     }, [navigate]);
 
     const handleLeaveExamEvent = useCallback(async (record) => {
         const result = await showDeleteConfirmDialog(
-            record.examEvent?.name, 
+            record.exam_event?.name, 
             'kỳ thi',
             'Bạn có chắc chắn muốn rời khỏi kỳ thi này?',
             'Rời khỏi'
@@ -163,7 +164,7 @@ const MyExamEvents = () => {
         },
         {
             title: 'Ảnh',
-            dataIndex: ['examEvent', 'image'],
+            dataIndex: ['exam_event', 'image'],
             key: 'image',
             width: 80,
             align: 'center',
@@ -172,7 +173,7 @@ const MyExamEvents = () => {
                     {image ? (
                         <Image
                             src={image}
-                            alt={record.examEvent?.name}
+                            alt={record.exam_event?.name}
                             width={40}
                             height={40}
                             style={{ 
@@ -194,17 +195,17 @@ const MyExamEvents = () => {
         },
         {
             title: 'Tên kỳ thi',
-            dataIndex: ['examEvent', 'name'],
-            key: 'exam_event_name',
+            dataIndex: ['exam_event', 'name'],
+            key: 'name',
             width: 200,
             render: (name, record) => (
                 <div>
                     <div className="font-medium text-blue-600" title={name}>
                         {truncateText(name, 50)}
                     </div>
-                    {record.examEvent?.description && (
-                        <div className="text-gray-500 text-sm mt-1" title={record.examEvent.description}>
-                            {truncateText(record.examEvent.description, 60)}
+                    {record.exam_event?.description && (
+                        <div className="text-gray-500 text-sm mt-1" title={record.exam_event.description}>
+                            {truncateText(record.exam_event.description, 60)}
                         </div>
                     )}
                 </div>
@@ -212,7 +213,7 @@ const MyExamEvents = () => {
         },
         {
             title: 'Mã kỳ thi',
-            dataIndex: ['examEvent', 'code'],
+            dataIndex: ['exam_event', 'code'],
             key: 'code',
             width: 150,
             render: (code) => (
@@ -223,7 +224,7 @@ const MyExamEvents = () => {
         },
         {
             title: 'Mô tả',
-            dataIndex: ['examEvent', 'description'],
+            dataIndex: ['exam_event', 'description'],
             key: 'description',
             width: 250,
             render: (description) => (
@@ -286,7 +287,7 @@ const MyExamEvents = () => {
                 <ActionEditDelete
                     onclickView={() => handleView(record)}
                     onclickDelete={() => handleLeaveExamEvent(record)}
-                    tooltipText={record.examEvent?.name}
+                    tooltipText={record.exam_event?.name}
                     hideEdit
                 />
             )
@@ -383,7 +384,7 @@ const MyExamEvents = () => {
                         <div className="px-3 sm:px-0">
                             <Table
                                 columns={columns}
-                                dataSource={dataListMyExamEvents?.rows || []}
+                                dataSource={dataListUserExamEvents?.rows || []}
                                 loading={loading}
                                 rowKey="id"
                                 pagination={false}

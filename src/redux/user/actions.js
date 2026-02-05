@@ -27,7 +27,7 @@ export const actionGetListUsers = (payload = {}) => async (dispatch) => {
     }
 }
 
-export const actionGetListUsersToAdd = (payload = {}) => async (dispatch) => {
+export const actionGetListUsersToAddCLass = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
@@ -44,7 +44,7 @@ export const actionGetListUsersToAdd = (payload = {}) => async (dispatch) => {
         dispatch(actionLoading(false));
         return response.data;
     } catch (error) {
-        console.error("Error in actionGetListUsersToAdd:", error);
+        console.error("Error in actionGetListUsersToAddCLass:", error);
         dispatch(actionLoading(false));
         alert(error?.message || error);
     }
