@@ -142,13 +142,22 @@ export const actionRemoveExamFromEvent = (examId, examEventId) => async (dispatc
     }
 }
 
-export const actionSubmitExam = (examEventId, examId, payload = {}) => async (dispatch) => {
+export const actionSubmitExam = (payload = {}) => async (dispatch) => {
     try {
         dispatch(actionLoading(true));
         const token = getToken();
-        const response = await fetchApi(`/app/exam-events/${examEventId}/exams/${examId}/submit`, 'post', payload, {
-            Authorization: `Bearer ${token}`,
-        });
+        const response = await fetchApi(
+            '/app/exams/submit',
+            'post',
+            payload,
+            { Authorization: `Bearer ${token}` }
+        );
+
+        if (response.code !== 200) {
+            dispatch(actionLoading(false));
+            return checkErrorCode(response?.code, response?.message);
+        }
+
         dispatch(actionLoading(false));
         return response.data;
     } catch (error) {
@@ -157,6 +166,7 @@ export const actionSubmitExam = (examEventId, examId, payload = {}) => async (di
         alert(error?.message || error);
     }
 };
+
 
 export const actionSaveDetailExam = (payload) => ({
     type: Types.DETAIL_EXAM,

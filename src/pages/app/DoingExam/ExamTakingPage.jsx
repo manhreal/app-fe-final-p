@@ -11,7 +11,7 @@ import {
     InfoCircleOutlined, PlusCircleOutlined, MinusCircleOutlined,
     WarningOutlined, TrophyOutlined, FileTextOutlined,
 } from '@ant-design/icons';
-import { renderSmartContent } from '../../../utils//utils_file';
+import { renderSmartContent } from '../../../utils/utils_file';
 import { actionGetListExamQuizs } from '../../../redux/exam_quiz/actions';
 import { actionSubmitExam } from '../../../redux/exam/actions';
 
@@ -27,7 +27,7 @@ const FORMAT_COLOR_MAP = {
 };
 const getFormatColor = (code) => FORMAT_COLOR_MAP[code] || '#8c8c8c';
 
-// ── Check if answer is filled ─────────────────────────────────────────────────
+// ── Kiểm tra câu đã trả lời chưa ─────────────────────────────────────────────
 const isAnswerFilled = (answer, formatCode) => {
     if (!answer) return false;
     switch (formatCode) {
@@ -289,26 +289,143 @@ const ExamTimer = ({ startTime, durationMinutes }) => {
     );
 };
 
+// ── Màn hình kết quả sau khi nộp ─────────────────────────────────────────────
+const SubmittedScreen = ({ submitResult, stats, onBack }) => {
+    const { total_score, max_score, attempt_number, needs_manual } = submitResult;
+    const percent = max_score > 0 ? Math.round((total_score / max_score) * 100) : 0;
+
+    // Xếp loại theo %
+    const getRank = () => {
+        if (percent >= 90) return { label: 'Xuất sắc', color: '#52c41a' };
+        if (percent >= 75) return { label: 'Giỏi',     color: '#1677ff' };
+        if (percent >= 60) return { label: 'Khá',      color: '#fa8c16' };
+        if (percent >= 50) return { label: 'Trung bình', color: '#faad14' };
+        return                    { label: 'Chưa đạt', color: '#ff4d4f' };
+    };
+    const rank = getRank();
+
+    return (
+        <div style={{ maxWidth: 560, margin: '48px auto', padding: '0 16px' }}>
+            <div style={{
+                background: 'white', borderRadius: 20,
+                padding: '40px 36px', textAlign: 'center',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
+            }}>
+                {/* Icon */}
+                <div style={{ fontSize: 56, marginBottom: 12 }}>
+                    {percent >= 50 ? '🎉' : '📝'}
+                </div>
+
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>
+                    Nộp bài thành công!
+                </h2>
+                <p style={{ color: '#8c8c8c', marginBottom: 28, fontSize: 14 }}>
+                    Bài làm của bạn đã được ghi nhận.
+                </p>
+
+                {/* Điểm số chính */}
+                <div style={{
+                    padding: '24px',
+                    borderRadius: 16,
+                    background: 'linear-gradient(135deg, #f0f9ff, #e6f4ff)',
+                    border: '1px solid #bae0ff',
+                    marginBottom: 16,
+                }}>
+                    <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6, fontWeight: 600, letterSpacing: 0.5 }}>
+                        ĐIỂM SỐ
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6, marginBottom: 12 }}>
+                        <span style={{ fontSize: 52, fontWeight: 800, color: '#1677ff', lineHeight: 1 }}>
+                            {total_score ?? '—'}
+                        </span>
+                        <span style={{ fontSize: 18, color: '#8c8c8c' }}>/ {max_score ?? '—'}</span>
+                    </div>
+                    <Progress
+                        percent={percent}
+                        strokeColor={{ '0%': '#1677ff', '100%': '#52c41a' }}
+                        style={{ marginBottom: 8 }}
+                    />
+                    <Tag style={{
+                        borderRadius: 20, fontWeight: 700, fontSize: 13,
+                        background: `${rank.color}15`,
+                        color: rank.color,
+                        border: `1px solid ${rank.color}40`,
+                        padding: '2px 14px',
+                    }}>
+                        {rank.label} — {percent}%
+                    </Tag>
+                </div>
+
+                {/* Thống kê phụ */}
+                <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                    <div style={{
+                        flex: 1, padding: '14px 12px', borderRadius: 12,
+                        background: '#f6ffed', border: '1px solid #b7eb8f',
+                    }}>
+                        <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 4 }}>Số câu đã làm</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: '#52c41a' }}>
+                            {stats.done}<span style={{ fontSize: 13, color: '#8c8c8c', fontWeight: 400 }}> / {stats.total}</span>
+                        </div>
+                    </div>
+                    <div style={{
+                        flex: 1, padding: '14px 12px', borderRadius: 12,
+                        background: '#fff7e6', border: '1px solid #ffd591',
+                    }}>
+                        <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 4 }}>Lần thi</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: '#fa8c16' }}>
+                            #{attempt_number || 1}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Cảnh báo câu cần chấm tay */}
+                {needs_manual && (
+                    <div style={{
+                        padding: '10px 14px', borderRadius: 10, marginBottom: 16,
+                        background: '#fffbe6', border: '1px solid #ffe58f',
+                        color: '#874d00', fontSize: 13, textAlign: 'left',
+                        display: 'flex', alignItems: 'flex-start', gap: 8,
+                    }}>
+                        <span style={{ fontSize: 16 }}>⏳</span>
+                        <span>
+                            Một số câu <b>tự luận / nối cặp</b> cần giáo viên chấm thủ công.
+                            Điểm cuối cùng có thể thay đổi sau khi chấm xong.
+                        </span>
+                    </div>
+                )}
+
+                <Button
+                    type="primary" size="large" block
+                    onClick={onBack}
+                    style={{ background: '#1677ff', borderRadius: 10, height: 44, fontWeight: 600 }}
+                >
+                    Quay về danh sách đề thi
+                </Button>
+            </div>
+        </div>
+    );
+};
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 const ExamTakingPage = () => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+    const dispatch   = useDispatch();
+    const navigate   = useNavigate();
     const { examEventId, examId } = useParams();
 
-    const [quizRows, setQuizRows] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
-    const [answers, setAnswers] = useState({});
-    const [activeIdx, setActiveIdx] = useState(0);
-    const [startTime] = useState(Date.now());
-    const [submitted, setSubmitted] = useState(false);
+    const [quizRows, setQuizRows]           = useState([]);
+    const [loading, setLoading]             = useState(true);
+    const [submitting, setSubmitting]       = useState(false);
+    const [answers, setAnswers]             = useState({});       // { [exam_quiz_id]: answerObj }
+    const [activeIdx, setActiveIdx]         = useState(0);
+    const [startTime]                       = useState(Date.now());
+    const [submitResult, setSubmitResult]   = useState(null);     // kết quả từ BE sau khi nộp
     const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
-    // ── Quay về danh sách đề thi ──────────────────────────────────────────────
     const handleBackToList = useCallback(() => {
         navigate(`/my-exam-events/info-exam-event/${examEventId}`);
     }, [navigate, examEventId]);
 
+    // ── Load câu hỏi ─────────────────────────────────────────────────────────
     useEffect(() => {
         if (!examId) return;
         setLoading(true);
@@ -322,11 +439,11 @@ const ExamTakingPage = () => {
     }, [examId, dispatch]);
 
     const activeQuiz = quizRows[activeIdx];
-    const setAnswer = useCallback((id, val) => setAnswers(prev => ({ ...prev, [id]: val })), []);
+    const setAnswer  = useCallback((id, val) => setAnswers(prev => ({ ...prev, [id]: val })), []);
 
     const stats = useMemo(() => {
         const total = quizRows.length;
-        const done = quizRows.filter(q => isAnswerFilled(answers[q.id], q.format?.code)).length;
+        const done  = quizRows.filter(q => isAnswerFilled(answers[q.id], q.format?.code)).length;
         const byFormat = quizRows.reduce((acc, q) => {
             const code = q.format?.code || '?';
             const name = q.format?.name || code;
@@ -338,28 +455,52 @@ const ExamTakingPage = () => {
         return { total, done, byFormat };
     }, [quizRows, answers]);
 
+    // ── Nộp bài ──────────────────────────────────────────────────────────────
     const handleSubmit = useCallback(async () => {
         setSubmitting(true);
         setShowSubmitConfirm(false);
         try {
+            const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+            // Payload đúng format để BE autoGradeAnswer xử lý được:
+            // - exam_quiz_id : BE dùng để map vào ExamSubmissionAnswer + lấy point + correct_answer
+            // - quiz_id      : BE dùng để lấy quiz gốc (quiz.answer, quiz.format.code)
+            // - answer       : đáp án user theo đúng cấu trúc từng format:
+            //     MCQ   → { correct: "A" }
+            //     MCQ_M → { correct: ["A","B"] }
+            //     TF    → { a: true, b: false, c: true, d: false }
+            //     SHORT → { answer: "text" }
+            //     FILL  → { accepted: ["ans1"] }
+            //     ESSAY → { solution: "long text" }
+            //     MATCH → { pairs: [{ left: "x", right: "y" }] }
+            // exam_id + exam_event_id truyền trong body vì route là POST /app/exams/submit
             const payload = {
-                exam_id: examId,
+                exam_id:       Number(examId),
+                exam_event_id: Number(examEventId),
+                time_spent:    timeSpent,
                 answers: quizRows.map(q => ({
-                    exam_quiz_id: q.id,
-                    quiz_id: q.quiz_id,
-                    answer: answers[q.id] || null,
+                    exam_quiz_id: q.id,      // id bảng exam_quizs — BE map point + correct_answer
+                    quiz_id:      q.quiz_id, // id quiz gốc — BE lấy format.code để auto-grade
+                    answer:       answers[q.id] || null,
                 })),
-                time_spent: Math.floor((Date.now() - startTime) / 1000),
             };
-            await dispatch(actionSubmitExam(payload));
-            setSubmitted(true);
+
+            // POST /app/exams/submit
+            // Response: { submission_id, total_score, max_score, attempt_number, status, needs_manual }
+            const result = await dispatch(actionSubmitExam(payload));
+
+            if (result) {
+                setSubmitResult(result);
+            } else {
+                message.error('Nộp bài thất bại, vui lòng thử lại');
+                setSubmitting(false);
+            }
         } catch (err) {
-            console.error(err);
-            message.error('Nộp bài thất bại, vui lòng thử lại');
-        } finally {
+            console.error('Submit error:', err);
+            message.error('Đã xảy ra lỗi khi nộp bài');
             setSubmitting(false);
         }
-    }, [dispatch, examId, quizRows, answers, startTime]);
+    }, [dispatch, examEventId, examId, quizRows, answers, startTime]);
 
     // ── Loading ───────────────────────────────────────────────────────────────
     if (loading) return (
@@ -371,27 +512,19 @@ const ExamTakingPage = () => {
         </div>
     );
 
-    // ── Submitted ─────────────────────────────────────────────────────────────
-    if (submitted) return (
-        <div style={{ maxWidth: 560, margin: '60px auto', textAlign: 'center', padding: 40 }}>
-            <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>Nộp bài thành công!</h2>
-            <p style={{ color: '#8c8c8c', marginBottom: 24 }}>Bài làm của bạn đã được ghi nhận.</p>
-            <div style={{ padding: 24, borderRadius: 16, background: '#f0f9ff', border: '1px solid #bae0ff', marginBottom: 24 }}>
-                <div style={{ fontSize: 14, color: '#595959', marginBottom: 4 }}>Số câu đã trả lời</div>
-                <div style={{ fontSize: 42, fontWeight: 800, color: '#1677ff' }}>{stats.done} / {stats.total}</div>
-            </div>
-            <Button type="primary" size="large" onClick={handleBackToList}
-                style={{ background: '#1677ff', borderRadius: 10, minWidth: 180 }}>
-                Quay về danh sách đề thi
-            </Button>
-        </div>
+    // ── Đã nộp → hiện kết quả từ BE ──────────────────────────────────────────
+    if (submitResult) return (
+        <SubmittedScreen
+            submitResult={submitResult}
+            stats={stats}
+            onBack={handleBackToList}
+        />
     );
 
-    const formatCode = activeQuiz?.format?.code;
-    const metaParts = activeQuiz?.content_meta?.parts || [];
+    const formatCode    = activeQuiz?.format?.code;
+    const metaParts     = activeQuiz?.content_meta?.parts || [];
     const currentAnswer = answers[activeQuiz?.id] || {};
-    const isFilled = isAnswerFilled(currentAnswer, formatCode);
+    const isFilled      = isAnswerFilled(currentAnswer, formatCode);
 
     return (
         <div style={{ minHeight: '100vh', background: '#f5f5f7' }}>
@@ -438,7 +571,6 @@ const ExamTakingPage = () => {
                     maxHeight: 'calc(100vh - 100px)', overflowY: 'auto',
                     display: 'flex', flexDirection: 'column', gap: 16,
                 }}>
-                    {/* Progress */}
                     <Card style={{ borderRadius: 16, border: '1px solid #f0f0f0' }} styles={{ body: { padding: 16 } }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#8c8c8c', marginBottom: 10, letterSpacing: 0.5 }}>
                             TIẾN ĐỘ LÀM BÀI
@@ -484,40 +616,36 @@ const ExamTakingPage = () => {
                         </div>
                     </Card>
 
-                    {/* Question Grid */}
                     <Card style={{ borderRadius: 16, border: '1px solid #f0f0f0' }} styles={{ body: { padding: 16 } }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#8c8c8c', marginBottom: 10, letterSpacing: 0.5 }}>
                             DANH SÁCH CÂU HỎI
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                             {quizRows.map((q, idx) => {
-                                const code = q.format?.code || '';
-                                const color = getFormatColor(code);
-                                const filled = isAnswerFilled(answers[q.id], code);
+                                const code    = q.format?.code || '';
+                                const color   = getFormatColor(code);
+                                const filled  = isAnswerFilled(answers[q.id], code);
                                 const isActive = idx === activeIdx;
                                 return (
                                     <Tooltip key={q.id} title={
                                         <div style={{ fontSize: 12 }}>
-                                            <div><b>Câu {idx + 1}</b> — Quiz #{q.quiz_id}</div>
+                                            <div><b>Câu {idx + 1}</b></div>
                                             <div>{q.format?.name}</div>
                                             <div style={{ color: filled ? '#95de64' : '#ffc069' }}>
                                                 {filled ? '✓ Đã trả lời' : '○ Chưa trả lời'}
                                             </div>
                                         </div>
                                     }>
-                                        <div
-                                            onClick={() => setActiveIdx(idx)}
-                                            style={{
-                                                width: 36, height: 36, borderRadius: 8,
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
-                                                background: isActive ? '#1677ff' : filled ? '#52c41a' : '#f5f5f5',
-                                                color: (isActive || filled) ? 'white' : '#595959',
-                                                border: isActive ? '2px solid #0958d9' : filled ? '2px solid #389e0d' : `1.5px solid ${color}55`,
-                                                boxShadow: isActive ? '0 2px 8px #1677ff50' : 'none',
-                                                transform: isActive ? 'scale(1.1)' : 'none',
-                                            }}
-                                        >
+                                        <div onClick={() => setActiveIdx(idx)} style={{
+                                            width: 36, height: 36, borderRadius: 8,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                                            background: isActive ? '#1677ff' : filled ? '#52c41a' : '#f5f5f5',
+                                            color: (isActive || filled) ? 'white' : '#595959',
+                                            border: isActive ? '2px solid #0958d9' : filled ? '2px solid #389e0d' : `1.5px solid ${color}55`,
+                                            boxShadow: isActive ? '0 2px 8px #1677ff50' : 'none',
+                                            transform: isActive ? 'scale(1.1)' : 'none',
+                                        }}>
                                             {idx + 1}
                                         </div>
                                     </Tooltip>
@@ -531,7 +659,6 @@ const ExamTakingPage = () => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                     {activeQuiz && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            {/* Question Card */}
                             <Card
                                 style={{ borderRadius: 16, border: '1px solid #f0f0f0' }}
                                 styles={{ body: { padding: '20px 24px' } }}
@@ -560,7 +687,7 @@ const ExamTakingPage = () => {
                                 }
                                 extra={
                                     <div style={{ display: 'flex', gap: 8 }}>
-                                        <Button icon={<LeftOutlined />} disabled={activeIdx === 0} onClick={() => setActiveIdx(i => i - 1)} />
+                                        <Button icon={<LeftOutlined />}  disabled={activeIdx === 0}                   onClick={() => setActiveIdx(i => i - 1)} />
                                         <Button icon={<RightOutlined />} disabled={activeIdx === quizRows.length - 1} onClick={() => setActiveIdx(i => i + 1)} />
                                     </div>
                                 }
@@ -576,13 +703,12 @@ const ExamTakingPage = () => {
                                 ))}
                             </Card>
 
-                            {/* Answer Card */}
                             <Card
                                 style={{ borderRadius: 16, border: '1px solid #f0f0f0' }}
                                 styles={{ body: { padding: '20px 24px' } }}
                                 title={<span style={{ fontWeight: 700, color: '#1a1a2e', fontSize: 14 }}>📝 Nhập đáp án</span>}
                                 extra={
-                                    answers[activeQuiz.id] && Object.keys(answers[activeQuiz.id]).length > 0 && (
+                                    currentAnswer && Object.keys(currentAnswer).length > 0 && (
                                         <Button size="small" danger type="text" icon={<CloseOutlined />}
                                             onClick={() => setAnswer(activeQuiz.id, {})}>
                                             Xóa đáp án
@@ -598,7 +724,6 @@ const ExamTakingPage = () => {
                                 />
                             </Card>
 
-                            {/* Navigation Footer */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 24 }}>
                                 <Button size="large" icon={<LeftOutlined />} disabled={activeIdx === 0}
                                     onClick={() => setActiveIdx(i => i - 1)} style={{ borderRadius: 10 }}>
@@ -630,7 +755,7 @@ const ExamTakingPage = () => {
                 </div>
             </div>
 
-            {/* ── Submit Confirm Modal ── */}
+            {/* ── Confirm Modal ── */}
             <Modal open={showSubmitConfirm} onCancel={() => setShowSubmitConfirm(false)} footer={null} centered width={480}>
                 <div style={{ textAlign: 'center', padding: '8px 0' }}>
                     <div style={{ fontSize: 48, marginBottom: 12 }}>{stats.done === stats.total ? '✅' : '⚠️'}</div>
