@@ -22,6 +22,8 @@ import InfoClass from '../pages/app/UserClass/InfoClass';
 import MyExamEvents from '../pages/app/UserExamEvent/MyExamEvents';
 import InfoExamEvent from '../pages/app/UserExamEvent/InfoExamEvent';
 
+import ExamTakingPage from '../pages/app/DoingExam/ExamTakingPage';
+
 const AppRoutes = () => {
     return (
         <Routes>
@@ -101,6 +103,16 @@ const AppRoutes = () => {
                         </PrivateRoute>
                     } 
                 />  
+
+                {/* Exam Taking */}
+                <Route 
+                    path="my-exam-events/info-exam-event/:examEventId/take-exam/:examId" 
+                    element={
+                        <PrivateRoute>
+                            <ExamTakingPage />
+                        </PrivateRoute>
+                    } 
+                />
 
                 <Route 
                     path="courses" 

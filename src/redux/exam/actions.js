@@ -142,6 +142,22 @@ export const actionRemoveExamFromEvent = (examId, examEventId) => async (dispatc
     }
 }
 
+export const actionSubmitExam = (examEventId, examId, payload = {}) => async (dispatch) => {
+    try {
+        dispatch(actionLoading(true));
+        const token = getToken();
+        const response = await fetchApi(`/app/exam-events/${examEventId}/exams/${examId}/submit`, 'post', payload, {
+            Authorization: `Bearer ${token}`,
+        });
+        dispatch(actionLoading(false));
+        return response.data;
+    } catch (error) {
+        console.error("Error in actionSubmitExam:", error);
+        dispatch(actionLoading(false));
+        alert(error?.message || error);
+    }
+};
+
 export const actionSaveDetailExam = (payload) => ({
     type: Types.DETAIL_EXAM,
     payload,

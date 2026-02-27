@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Table, Input, Card, Space, Row, Col, Form, Tag, Select, Image, Button } from 'antd';
-import { SearchOutlined, ReloadOutlined, FileTextOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, FileTextOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { actionGetListExams } from '../../../redux/exam/actions';
 import { actionGetListExamTypes } from '../../../redux/exam_type/actions';
 import SimplePagination from '../../../components/Pagination/Pagination';
@@ -18,41 +19,47 @@ const DEFAULT_PAGINATION = {
 
 const ListExams = ({ examEventId }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { id: examEventIdFromUrl } = useParams(); // nếu dùng trong InfoExamEvent
+    const resolvedExamEventId = examEventId || examEventIdFromUrl;
+
     const { dataListExams, loading } = useSelector(state => state.exams);
     const { dataListExamTypes } = useSelector(state => state.examTypes);
     const [form] = Form.useForm();
     const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
 
+    // ── Navigate tới trang làm bài ────────────────────────────────────────────
+    const handleTakeExam = useCallback((record) => {
+        navigate(`/my-exam-events/info-exam-event/${resolvedExamEventId}/take-exam/${record.id}`);
+    }, [navigate, resolvedExamEventId]);
+
     const buildSearchParams = useCallback((formValues = {}, paginationInfo = pagination) => {
         const { name, code, type_id } = formValues;
         return {
-            exam_event_id: examEventId,
+            exam_event_id: resolvedExamEventId,
             ...(name && { name }),
             ...(code && { code }),
             ...(type_id && { type_id }),
             page: paginationInfo.current,
             limit: paginationInfo.pageSize
         };
-    }, [pagination, examEventId]);
+    }, [pagination, resolvedExamEventId]);
 
     const handleSearch = useCallback(async (resetPage = true) => {
-        if (!examEventId) return;
+        if (!resolvedExamEventId) return;
 
         const formValues = form.getFieldsValue();
         const searchPagination = resetPage
             ? { ...pagination, current: 1 }
             : pagination;
 
-        if (resetPage) {
-            setPagination(searchPagination);
-        }
+        if (resetPage) setPagination(searchPagination);
 
         const params = buildSearchParams(formValues, searchPagination);
 
         try {
             const result = await dispatch(actionGetListExams(params));
             const total = result?.total || 0;
-
             setPagination(prev => ({
                 ...prev,
                 total,
@@ -63,12 +70,11 @@ const ListExams = ({ examEventId }) => {
             setPagination(prev => ({ ...prev, total: 0 }));
             await showErrorAlert('Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.');
         }
-    }, [dispatch, form, pagination, buildSearchParams, examEventId]);
+    }, [dispatch, form, pagination, buildSearchParams, resolvedExamEventId]);
 
     const handlePageChange = useCallback((page) => {
         const newPagination = { ...pagination, current: page };
         setPagination(newPagination);
-
         const formValues = form.getFieldsValue();
         const params = buildSearchParams(formValues, newPagination);
         dispatch(actionGetListExams(params));
@@ -77,19 +83,14 @@ const ListExams = ({ examEventId }) => {
     const handleReset = useCallback(async () => {
         form.resetFields();
         setPagination(prev => ({ ...prev, current: 1 }));
-        const params = { 
-            exam_event_id: examEventId, 
-            page: 1, 
-            limit: pagination.pageSize 
-        };
-
+        const params = { exam_event_id: resolvedExamEventId, page: 1, limit: pagination.pageSize };
         try {
             await dispatch(actionGetListExams(params));
             showSuccessToast('Đã đặt lại bộ lọc');
         } catch (error) {
             console.error('Reset error:', error);
         }
-    }, [dispatch, form, pagination.pageSize, examEventId]);
+    }, [dispatch, form, pagination.pageSize, resolvedExamEventId]);
 
     const truncateText = (text, maxLength = 100) => {
         if (!text) return '-';
@@ -103,16 +104,9 @@ const ListExams = ({ examEventId }) => {
 
     const getExamStatus = (startDate, endDate) => {
         const now = dayjs();
-        const start = dayjs(startDate);
-        const end = dayjs(endDate);
-
-        if (now.isBefore(start)) {
-            return <Tag color="blue">Sắp diễn ra</Tag>;
-        } else if (now.isAfter(end)) {
-            return <Tag color="default">Đã kết thúc</Tag>;
-        } else {
-            return <Tag color="green">Đang diễn ra</Tag>;
-        }
+        if (now.isBefore(dayjs(startDate))) return <Tag color="blue">Sắp diễn ra</Tag>;
+        if (now.isAfter(dayjs(endDate)))    return <Tag color="default">Đã kết thúc</Tag>;
+        return <Tag color="green">Đang diễn ra</Tag>;
     };
 
     const columns = useMemo(() => [
@@ -137,14 +131,8 @@ const ListExams = ({ examEventId }) => {
                             alt={record.name}
                             width={40}
                             height={40}
-                            style={{
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                border: '1px solid #f0f0f0'
-                            }}
-                            preview={{
-                                mask: 'Xem ảnh'
-                            }}
+                            style={{ objectFit: 'cover', borderRadius: '8px', border: '1px solid #f0f0f0' }}
+                            preview={{ mask: 'Xem ảnh' }}
                         />
                     ) : (
                         <div className="w-10 h-10 rounded bg-gradient-to-br from-green-500 via-blue-500 to-purple-500 flex items-center justify-center text-white">
@@ -170,20 +158,14 @@ const ListExams = ({ examEventId }) => {
             dataIndex: 'code',
             key: 'code',
             width: 140,
-            render: (code) => (
-                <Tag color="blue">{code || '-'}</Tag>
-            )
+            render: (code) => <Tag color="blue">{code || '-'}</Tag>
         },
         {
             title: 'Loại đề thi',
             dataIndex: ['exam_type', 'name'],
             key: 'exam_type',
             width: 150,
-            render: (exam_type) => (
-                <span className="text-gray-600">
-                    {exam_type || '-'}
-                </span>
-            )
+            render: (exam_type) => <span className="text-gray-600">{exam_type || '-'}</span>
         },
         {
             title: 'Thời gian làm bài',
@@ -191,11 +173,7 @@ const ListExams = ({ examEventId }) => {
             key: 'doing_time',
             width: 120,
             align: 'center',
-            render: (time) => (
-                <span className="text-gray-600">
-                    {time ? `${time} phút` : '-'}
-                </span>
-            )
+            render: (time) => <span className="text-gray-600">{time ? `${time} phút` : '-'}</span>
         },
         {
             title: 'Điểm',
@@ -203,9 +181,7 @@ const ListExams = ({ examEventId }) => {
             key: 'score',
             width: 80,
             align: 'center',
-            render: (score) => (
-                <Tag color="green">{score || 0}</Tag>
-            )
+            render: (score) => <Tag color="green">{score || 0}</Tag>
         },
         {
             title: 'Thời gian thi',
@@ -224,17 +200,32 @@ const ListExams = ({ examEventId }) => {
             width: 120,
             align: 'center',
             render: (_, record) => getExamStatus(record.startDate, record.endDate)
-        }
-    ], [pagination]);
+        },
+        {
+            title: 'Thao tác',
+            key: 'action',
+            align: 'center',
+            width: 120,
+            fixed: 'right',
+            render: (_, record) => (
+                <Button
+                    type="primary"
+                    icon={<PlayCircleOutlined />}
+                    onClick={() => handleTakeExam(record)}
+                    style={{ background: '#52c41a', border: 'none', borderRadius: 8, fontWeight: 600 }}
+                >
+                    Làm bài
+                </Button>
+            )
+        },
+    ], [pagination, handleTakeExam]);
 
     useEffect(() => {
         dispatch(actionGetListExamTypes({ page: 1, limit: 1000 }));
-        if (examEventId) {
-            handleSearch(false);
-        }
-    }, [examEventId]);
+        if (resolvedExamEventId) handleSearch(false);
+    }, [resolvedExamEventId]);
 
-    if (!examEventId) {
+    if (!resolvedExamEventId) {
         return (
             <Card>
                 <div className="text-center text-gray-500 py-8">
@@ -249,65 +240,35 @@ const ListExams = ({ examEventId }) => {
             <div className="mx-auto max-w-full lg:max-w-7xl">
                 {/* Search Form */}
                 <Card style={{ marginBottom: '16px' }} className="w-full">
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={() => handleSearch(true)}
-                        className="w-full"
-                    >
+                    <Form form={form} layout="vertical" onFinish={() => handleSearch(true)} className="w-full">
                         <Row gutter={16}>
                             <Col xs={24} sm={12} md={8}>
                                 <Form.Item label="Tên đề thi" name="name">
-                                    <Input
-                                        placeholder="Nhập tên đề thi"
-                                        allowClear
-                                    />
+                                    <Input placeholder="Nhập tên đề thi" allowClear />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
                                 <Form.Item label="Mã đề" name="code">
-                                    <Input
-                                        placeholder="Nhập mã đề"
-                                        allowClear
-                                    />
+                                    <Input placeholder="Nhập mã đề" allowClear />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
                                 <Form.Item label="Loại đề thi" name="type_id">
-                                    <Select
-                                        placeholder="Chọn loại đề thi"
-                                        allowClear
-                                        showSearch
-                                        optionFilterProp="children"
-                                    >
+                                    <Select placeholder="Chọn loại đề thi" allowClear showSearch optionFilterProp="children">
                                         {dataListExamTypes?.rows?.map(type => (
-                                            <Option key={type.id} value={type.id}>
-                                                {type.name}
-                                            </Option>
+                                            <Option key={type.id} value={type.id}>{type.name}</Option>
                                         ))}
                                     </Select>
                                 </Form.Item>
                             </Col>
                         </Row>
-
                         <Row justify="start">
                             <Col>
                                 <Space wrap>
-                                    <Button
-                                        type="primary"
-                                        htmlType="submit"
-                                        icon={<SearchOutlined />}
-                                        loading={loading}
-                                        className='bg-blue-600'
-                                    >
+                                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loading} className='bg-blue-600'>
                                         Tìm kiếm
                                     </Button>
-                                    <Button
-                                        icon={<ReloadOutlined />}
-                                        onClick={handleReset}
-                                    >
-                                        Đặt lại
-                                    </Button>
+                                    <Button icon={<ReloadOutlined />} onClick={handleReset}>Đặt lại</Button>
                                 </Space>
                             </Col>
                         </Row>
@@ -317,11 +278,7 @@ const ListExams = ({ examEventId }) => {
                 {/* Data Table */}
                 <Card
                     title="Danh sách đề thi"
-                    extra={
-                        <span style={{ color: '#666' }}>
-                            Tổng số: {pagination.total} đề thi
-                        </span>
-                    }
+                    extra={<span style={{ color: '#666' }}>Tổng số: {pagination.total} đề thi</span>}
                     className="w-full"
                 >
                     <div className="w-full overflow-x-auto -mx-3 sm:mx-0 max-w-full">
@@ -333,11 +290,10 @@ const ListExams = ({ examEventId }) => {
                                 rowKey="id"
                                 pagination={false}
                                 size="middle"
-                                scroll={{ x: 1200 }}
+                                scroll={{ x: 1300 }}
                             />
                         </div>
                     </div>
-
                     <div style={{ marginTop: '16px' }} className="flex justify-end">
                         <SimplePagination
                             page={pagination.current}
